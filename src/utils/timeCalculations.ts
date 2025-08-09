@@ -76,12 +76,6 @@ export const calculateExitTime = (
     resultTitle += ' + Straordinario';
   }
 
-  // Meal Voucher Validation & Correction
-  const minExitTimeMinutes = 16 * 60 + 15; // 16:15
-  if (mode === '7h12' && lunchBreakEnabled && exitTotalMinutes < minExitTimeMinutes) {
-    exitTotalMinutes = minExitTimeMinutes;
-  }
-  
   const exitDate = new Date();
   exitDate.setHours(Math.floor(exitTotalMinutes / 60), exitTotalMinutes % 60, 0, 0);
 
