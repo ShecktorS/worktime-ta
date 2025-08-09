@@ -21,6 +21,7 @@ const App: React.FC = () => {
     lunchBreakDuration: 30,
   });
 
+  const [entryTimeError, setEntryTimeError] = useState('');
   const [lunchBreakError, setLunchBreakError] = useState('');
 
   const handleModeChange = useCallback((mode: WorkMode) => {
@@ -61,10 +62,26 @@ const App: React.FC = () => {
       lunchBreakStart: '',
       lunchBreakDuration: 30,
     });
-    }, []);
+    setEntryTimeError('');
+    setLunchBreakError('');
+  }, []);
 
   useEffect(() => {
-    if (!state.expertMode || !state.lunchBreakEnabled || !state.lunchBreakStart) {
+    if (!state.entryTime) {
+      setEntryTimeError('');
+      return;
+    }
+    const isValid = /^([0-1]\d|2[0-3]):([0-5]\d)$/.test(state.entryTime);
+    setEntryTimeError(isValid ? '' : 'Orario non valido');
+  }, [state.entryTime]);
+
+  useEffect(() => {
+    if (
+      entryTimeError ||
+      !state.expertMode ||
+      !state.lunchBreakEnabled ||
+      !state.lunchBreakStart
+    ) {
       setLunchBreakError('');
       return;
     }
@@ -78,10 +95,17 @@ const App: React.FC = () => {
     } else {
       setLunchBreakError('');
     }
-  }, [state.lunchBreakStart, state.lunchBreakDuration, state.entryTime, state.expertMode, state.lunchBreakEnabled]);
+  }, [
+    state.lunchBreakStart,
+    state.lunchBreakDuration,
+    state.entryTime,
+    state.expertMode,
+    state.lunchBreakEnabled,
+    entryTimeError,
+  ]);
 
   const calculationResult = useMemo(() => {
-    if (lunchBreakError) return null;
+    if (!state.entryTime || entryTimeError || lunchBreakError) return null;
     return calculateExitTime(
       state.entryTime,
       state.selectedMode,
@@ -89,7 +113,16 @@ const App: React.FC = () => {
       state.overtimeEnabled,
       state.expertMode && state.lunchBreakEnabled ? state.lunchBreakDuration : undefined
     );
-  }, [state.entryTime, state.selectedMode, state.lunchBreakEnabled, state.overtimeEnabled, state.lunchBreakDuration, state.expertMode, lunchBreakError]);
+  }, [
+    state.entryTime,
+    state.selectedMode,
+    state.lunchBreakEnabled,
+    state.overtimeEnabled,
+    state.lunchBreakDuration,
+    state.expertMode,
+    lunchBreakError,
+    entryTimeError,
+  ]);
 
   const showLunchBreakOption = state.selectedMode === '7h12' || state.selectedMode === '9h';
   const showResults = !!calculationResult;
@@ -156,12 +189,17 @@ const App: React.FC = () => {
           />
 
           <div className="grid gap-5 mb-10">
-            <TimeInput
-              id="entrata"
-              label="Entrata"
-              value={state.entryTime}
-              onChange={handleEntryTimeChange}
-            />
+            <div className="flex flex-col">
+              <TimeInput
+                id="entrata"
+                label="Entrata"
+                value={state.entryTime}
+                onChange={handleEntryTimeChange}
+              />
+              {entryTimeError && (
+                <span className="text-red-300 text-sm">{entryTimeError}</span>
+              )}
+            </div>
             {state.expertMode && state.lunchBreakEnabled && (
               <>
                 <TimeInput
@@ -200,9 +238,10 @@ const App: React.FC = () => {
             </button>
           </div>
 
-          <ResultCard 
+          <ResultCard
             result={calculationResult}
             visible={showResults}
+            entryTimeError={entryTimeError}
           />
           
           <Footer />
