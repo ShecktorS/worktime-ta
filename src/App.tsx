@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useCallback, useEffect } from 'react';
+import React, { useState, useMemo, useCallback, useEffect, useReducer } from 'react';
 import { Utensils, Zap } from 'lucide-react';
 import Header from './components/Header';
 import Clock from './components/Clock';
@@ -10,58 +10,101 @@ import Footer from './components/Footer';
 import { WorkMode, WorkTimeState } from './types';
 import { calculateExitTime, timeStringToMinutes } from './utils/timeCalculations';
 
-const App: React.FC = () => {
-  const [state, setState] = useState<WorkTimeState>({
-    selectedMode: '6h',
-    entryTime: '',
-    lunchBreakEnabled: false,
-    overtimeEnabled: false,
-    expertMode: false,
-    lunchBreakStart: '',
-    lunchBreakDuration: 30,
-  });
+type Action =
+  | { type: 'SET_MODE'; payload: WorkMode }
+  | { type: 'SET_ENTRY_TIME'; payload: string }
+  | { type: 'TOGGLE_LUNCH_BREAK'; payload: boolean }
+  | { type: 'TOGGLE_OVERTIME'; payload: boolean }
+  | { type: 'TOGGLE_EXPERT_MODE' }
+  | { type: 'SET_LUNCH_START'; payload: string }
+  | { type: 'SET_LUNCH_DURATION'; payload: number }
+  | { type: 'RESET' };
 
+const initialState: WorkTimeState = {
+  selectedMode: '6h',
+  entryTime: '',
+  lunchBreakEnabled: false,
+  overtimeEnabled: false,
+  expertMode: false,
+  lunchBreakStart: '',
+  lunchBreakDuration: 30,
+};
+
+function reducer(state: WorkTimeState, action: Action): WorkTimeState {
+  switch (action.type) {
+    case 'SET_MODE':
+      return { ...state, selectedMode: action.payload };
+    case 'SET_ENTRY_TIME':
+      return { ...state, entryTime: action.payload };
+    case 'TOGGLE_LUNCH_BREAK':
+      return { ...state, lunchBreakEnabled: action.payload };
+    case 'TOGGLE_OVERTIME':
+      return { ...state, overtimeEnabled: action.payload };
+    case 'TOGGLE_EXPERT_MODE':
+      return { ...state, expertMode: !state.expertMode };
+    case 'SET_LUNCH_START':
+      return { ...state, lunchBreakStart: action.payload };
+    case 'SET_LUNCH_DURATION':
+      return { ...state, lunchBreakDuration: action.payload };
+    case 'RESET':
+      return initialState;
+    default:
+      return state;
+  }
+}
+const App: React.FC = () => {
+  const [state, dispatch] = useReducer(reducer, initialState);
   const [lunchBreakError, setLunchBreakError] = useState('');
 
-  const handleModeChange = useCallback((mode: WorkMode) => {
-    setState(prev => ({ ...prev, selectedMode: mode }));
-  }, []);
+  const handleModeChange = useCallback(
+    (mode: WorkMode) => {
+      dispatch({ type: 'SET_MODE', payload: mode });
+    },
+    [dispatch]
+  );
 
-  const handleEntryTimeChange = useCallback((time: string) => {
-    setState(prev => ({ ...prev, entryTime: time }));
-  }, []);
+  const handleEntryTimeChange = useCallback(
+    (time: string) => {
+      dispatch({ type: 'SET_ENTRY_TIME', payload: time });
+    },
+    [dispatch]
+  );
 
-  const handleLunchBreakChange = useCallback((enabled: boolean) => {
-    setState(prev => ({ ...prev, lunchBreakEnabled: enabled }));
-  }, []);
+  const handleLunchBreakChange = useCallback(
+    (enabled: boolean) => {
+      dispatch({ type: 'TOGGLE_LUNCH_BREAK', payload: enabled });
+    },
+    [dispatch]
+  );
 
   const toggleExpertMode = useCallback(() => {
-    setState(prev => ({ ...prev, expertMode: !prev.expertMode }));
-  }, []);
+    dispatch({ type: 'TOGGLE_EXPERT_MODE' });
+  }, [dispatch]);
 
-  const handleLunchBreakStartChange = useCallback((time: string) => {
-    setState(prev => ({ ...prev, lunchBreakStart: time }));
-  }, []);
+  const handleLunchBreakStartChange = useCallback(
+    (time: string) => {
+      dispatch({ type: 'SET_LUNCH_START', payload: time });
+    },
+    [dispatch]
+  );
 
-  const handleLunchBreakDurationChange = useCallback((duration: number) => {
-    setState(prev => ({ ...prev, lunchBreakDuration: duration }));
-  }, []);
+  const handleLunchBreakDurationChange = useCallback(
+    (duration: number) => {
+      dispatch({ type: 'SET_LUNCH_DURATION', payload: duration });
+    },
+    [dispatch]
+  );
 
-  const handleOvertimeChange = useCallback((enabled: boolean) => {
-    setState(prev => ({ ...prev, overtimeEnabled: enabled }));
-  }, []);
+  const handleOvertimeChange = useCallback(
+    (enabled: boolean) => {
+      dispatch({ type: 'TOGGLE_OVERTIME', payload: enabled });
+    },
+    [dispatch]
+  );
 
   const handleReset = useCallback(() => {
-    setState({
-      selectedMode: '6h',
-      entryTime: '',
-      lunchBreakEnabled: false,
-      overtimeEnabled: false,
-      expertMode: false,
-      lunchBreakStart: '',
-      lunchBreakDuration: 30,
-    });
-    }, []);
+    dispatch({ type: 'RESET' });
+  }, [dispatch]);
 
   useEffect(() => {
     if (!state.expertMode || !state.lunchBreakEnabled || !state.lunchBreakStart) {
