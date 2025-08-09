@@ -13,7 +13,7 @@ const ResultCard: React.FC<ResultCardProps> = ({ result, visible }) => {
 
   return (
     <div className={`
-      opacity-0 transform translate-y-5 scale-95 transition-all duration-400 ease-in-out
+      opacity-0 transform translate-y-5 scale-95 transition-all duration-300 ease-in-out
       ${visible ? 'opacity-100 translate-y-0 scale-100' : ''}
       grid grid-cols-1 gap-6
     `}>
