@@ -5,6 +5,9 @@ export interface WorkTimeState {
   entryTime: string;
   lunchBreakEnabled: boolean;
   overtimeEnabled: boolean;
+  expertMode: boolean;
+  lunchBreakStart: string;
+  lunchBreakDuration: number;
 }
 
 export interface CalculationResult {

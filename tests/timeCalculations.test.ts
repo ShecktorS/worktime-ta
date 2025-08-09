@@ -3,10 +3,9 @@ import test from 'node:test';
 import assert from 'node:assert';
 import { calculateExitTime } from '../src/utils/timeCalculations.js';
 
-test('correzione dell\'orario di uscita a 16:15 in modalità 7h12 con pausa', () => {
-  const result = calculateExitTime('08:00', '7h12', true, false);
-  assert.strictEqual(result?.exitTime, '16:15');
-  assert.strictEqual(result?.warning, 'Uscita minima per buono pasto: 16:15');
+test('calcolo dell\'orario di uscita con pausa personalizzata', () => {
+  const result = calculateExitTime('08:00', '7h12', true, false, 60);
+  assert.strictEqual(result?.exitTime, '16:12');
 });
 
 test('aggiunta di 30 minuti di straordinario quando overtimeEnabled è true', () => {

@@ -31,7 +31,8 @@ export const calculateExitTime = (
   entryTime: string,
   mode: WorkMode,
   lunchBreakEnabled: boolean,
-  overtimeEnabled: boolean
+  overtimeEnabled: boolean,
+  lunchBreakMinutes?: number
 ): CalculationResult | null => {
   if (!entryTime) return null;
 
@@ -48,7 +49,7 @@ export const calculateExitTime = (
     case '7h12':
       targetWorkMinutes = 7 * 60 + 12; // Work is always 7h 12m
       if (lunchBreakEnabled) {
-        breakMinutes = 30; // Break is added on top
+        breakMinutes = lunchBreakMinutes ?? 30; // Break is added on top
         resultTitle = 'Giornata 7:12 (con Pausa)';
       } else {
         resultTitle = 'Giornata 7:12 (Estiva)';
@@ -57,7 +58,7 @@ export const calculateExitTime = (
     case '9h':
       targetWorkMinutes = 9 * 60;
       if (lunchBreakEnabled) {
-        breakMinutes = 30;
+        breakMinutes = lunchBreakMinutes ?? 30;
         resultTitle = 'Giornata 9 Ore (con Pausa)';
       } else {
         resultTitle = 'Giornata 9 Ore';

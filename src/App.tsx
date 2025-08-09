@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useCallback } from 'react';
+import React, { useState, useMemo, useCallback, useEffect } from 'react';
 import { Utensils, Zap } from 'lucide-react';
 import Header from './components/Header';
 import Clock from './components/Clock';
@@ -8,7 +8,7 @@ import TimeInput from './components/TimeInput';
 import ResultCard from './components/ResultCard';
 import Footer from './components/Footer';
 import { WorkMode, WorkTimeState } from './types';
-import { calculateExitTime } from './utils/timeCalculations';
+import { calculateExitTime, timeStringToMinutes } from './utils/timeCalculations';
 
 const App: React.FC = () => {
   const [state, setState] = useState<WorkTimeState>({
@@ -16,7 +16,12 @@ const App: React.FC = () => {
     entryTime: '',
     lunchBreakEnabled: false,
     overtimeEnabled: false,
+    expertMode: false,
+    lunchBreakStart: '',
+    lunchBreakDuration: 30,
   });
+
+  const [lunchBreakError, setLunchBreakError] = useState('');
 
   const handleModeChange = useCallback((mode: WorkMode) => {
     setState(prev => ({ ...prev, selectedMode: mode }));
@@ -30,6 +35,18 @@ const App: React.FC = () => {
     setState(prev => ({ ...prev, lunchBreakEnabled: enabled }));
   }, []);
 
+  const toggleExpertMode = useCallback(() => {
+    setState(prev => ({ ...prev, expertMode: !prev.expertMode }));
+  }, []);
+
+  const handleLunchBreakStartChange = useCallback((time: string) => {
+    setState(prev => ({ ...prev, lunchBreakStart: time }));
+  }, []);
+
+  const handleLunchBreakDurationChange = useCallback((duration: number) => {
+    setState(prev => ({ ...prev, lunchBreakDuration: duration }));
+  }, []);
+
   const handleOvertimeChange = useCallback((enabled: boolean) => {
     setState(prev => ({ ...prev, overtimeEnabled: enabled }));
   }, []);
@@ -40,33 +57,75 @@ const App: React.FC = () => {
       entryTime: '',
       lunchBreakEnabled: false,
       overtimeEnabled: false,
+      expertMode: false,
+      lunchBreakStart: '',
+      lunchBreakDuration: 30,
     });
-  }, []);
+    }, []);
+
+  useEffect(() => {
+    if (!state.expertMode || !state.lunchBreakEnabled || !state.lunchBreakStart) {
+      setLunchBreakError('');
+      return;
+    }
+    const start = timeStringToMinutes(state.lunchBreakStart);
+    const end = start + state.lunchBreakDuration;
+    const entry = timeStringToMinutes(state.entryTime);
+    if (start < entry) {
+      setLunchBreakError('La pausa deve iniziare dopo l\'entrata');
+    } else if (end > 15 * 60) {
+      setLunchBreakError('La pausa deve terminare entro le 15:00');
+    } else {
+      setLunchBreakError('');
+    }
+  }, [state.lunchBreakStart, state.lunchBreakDuration, state.entryTime, state.expertMode, state.lunchBreakEnabled]);
 
   const calculationResult = useMemo(() => {
+    if (lunchBreakError) return null;
     return calculateExitTime(
       state.entryTime,
       state.selectedMode,
       state.lunchBreakEnabled,
-      state.overtimeEnabled
+      state.overtimeEnabled,
+      state.expertMode && state.lunchBreakEnabled ? state.lunchBreakDuration : undefined
     );
-  }, [state.entryTime, state.selectedMode, state.lunchBreakEnabled, state.overtimeEnabled]);
+  }, [state.entryTime, state.selectedMode, state.lunchBreakEnabled, state.overtimeEnabled, state.lunchBreakDuration, state.expertMode, lunchBreakError]);
 
   const showLunchBreakOption = state.selectedMode === '7h12' || state.selectedMode === '9h';
   const showResults = !!calculationResult;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-500 to-purple-700 text-white overflow-x-hidden relative flex justify-center items-center p-4">
+    <div className={`min-h-screen text-white overflow-x-hidden relative flex justify-center items-center p-4 transition-colors duration-500 ${state.expertMode ? 'bg-gradient-to-br from-blue-900 via-blue-800 to-blue-600' : 'bg-gradient-to-br from-blue-500 to-purple-700'}`}>
       {/* Background effects */}
       <div className="fixed inset-0 pointer-events-none z-0">
-        <div className="absolute inset-0 bg-gradient-to-br from-blue-500/30 via-transparent to-pink-500/30" />
-        <div className="absolute top-0 left-1/5 w-96 h-96 bg-blue-400/20 rounded-full blur-3xl" />
-        <div className="absolute bottom-0 right-1/5 w-96 h-96 bg-pink-400/20 rounded-full blur-3xl" />
-        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-cyan-400/10 rounded-full blur-3xl" />
+        {state.expertMode ? (
+          <>
+            <div className="absolute inset-0 bg-gradient-to-br from-blue-900/40 via-blue-700/40 to-blue-500/40" />
+            <div className="absolute top-0 left-1/5 w-96 h-96 bg-blue-700/20 rounded-full blur-3xl" />
+            <div className="absolute bottom-0 right-1/5 w-96 h-96 bg-blue-500/20 rounded-full blur-3xl" />
+            <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-blue-400/10 rounded-full blur-3xl" />
+          </>
+        ) : (
+          <>
+            <div className="absolute inset-0 bg-gradient-to-br from-blue-500/30 via-transparent to-pink-500/30" />
+            <div className="absolute top-0 left-1/5 w-96 h-96 bg-blue-400/20 rounded-full blur-3xl" />
+            <div className="absolute bottom-0 right-1/5 w-96 h-96 bg-pink-400/20 rounded-full blur-3xl" />
+            <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-cyan-400/10 rounded-full blur-3xl" />
+          </>
+        )}
       </div>
 
       <div className="w-full max-w-2xl relative z-10">
         <Header />
+
+        <div className="flex justify-end mb-6">
+          <button
+            onClick={toggleExpertMode}
+            className="px-4 py-2 rounded-lg bg-blue-600 text-white shadow-lg hover:bg-blue-500 transition-colors"
+          >
+            {state.expertMode ? 'Modalità Base' : 'Modalità Esperta'}
+          </button>
+        </div>
 
         <div className="bg-white bg-opacity-10 backdrop-blur-2xl rounded-3xl border border-white border-opacity-20 shadow-2xl p-8 relative overflow-hidden">
           {/* Glass card highlight effect */}
@@ -103,6 +162,32 @@ const App: React.FC = () => {
               value={state.entryTime}
               onChange={handleEntryTimeChange}
             />
+            {state.expertMode && state.lunchBreakEnabled && (
+              <>
+                <TimeInput
+                  id="lunchStart"
+                  label="Inizio Pausa Pranzo"
+                  value={state.lunchBreakStart}
+                  onChange={handleLunchBreakStartChange}
+                />
+                <div className="flex flex-col">
+                  <label htmlFor="lunchDuration" className="font-medium mb-2">Durata Pausa (min)</label>
+                  <input
+                    id="lunchDuration"
+                    type="number"
+                    min={30}
+                    max={120}
+                    step={15}
+                    value={state.lunchBreakDuration}
+                    onChange={e => handleLunchBreakDurationChange(Number(e.target.value))}
+                    className="p-3 rounded-lg bg-white bg-opacity-20 border border-white border-opacity-30 text-white focus:outline-none focus:ring-2 focus:ring-blue-400"
+                  />
+                </div>
+                {lunchBreakError && (
+                  <span className="text-red-300 text-sm">{lunchBreakError}</span>
+                )}
+              </>
+            )}
           </div>
 
           <div className="flex justify-center gap-6 mb-8">
