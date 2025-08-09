@@ -9,14 +9,17 @@ export const formatTime = (date: Date): string => {
 
 export const timeStringToMinutes = (timeStr: string): number => {
   if (!timeStr) return 0;
-  const [h, m] = timeStr.split(':').map(Number);
+  const [hStr, mStr] = timeStr.split(':');
+  const h = Number(hStr);
+  const m = Number(mStr);
+  if (isNaN(h) || isNaN(m)) return 0;
   return h * 60 + m;
 };
 
 export const minutesToHM = (totalMinutes: number): string => {
   if (isNaN(totalMinutes) || totalMinutes < 0) return '00:00';
   const h = Math.floor(totalMinutes / 60);
-  const m = Math.round(totalMinutes % 60);
+  const m = Math.floor(totalMinutes % 60);
   return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`;
 };
 
