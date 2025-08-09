@@ -4,10 +4,11 @@ import { CalculationResult } from '../types';
 interface ResultCardProps {
   result: Omit<CalculationResult, 'warning'> | null;
   visible: boolean;
+  entryTimeError?: string;
 }
 
-const ResultCard: React.FC<ResultCardProps> = ({ result, visible }) => {
-  if (!visible || !result) {
+const ResultCard: React.FC<ResultCardProps> = ({ result, visible, entryTimeError }) => {
+  if (!visible || !result || entryTimeError) {
     return null;
   }
 
