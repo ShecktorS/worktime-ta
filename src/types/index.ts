@@ -12,7 +12,6 @@ export interface CalculationResult {
   workedTime: string;
   breakTime: string;
   title: string;
-  warning?: string;
 }
 
 export interface ToggleOptionProps {

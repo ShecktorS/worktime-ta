@@ -21,7 +21,6 @@ const ResultCard: React.FC<ResultCardProps> = ({ result, visible }) => {
         <div className="text-xl font-semibold mb-5 opacity-90">
           {result.title}
         </div>
-        
         <div className="text-4xl font-bold font-mono mb-6 text-pink-300 drop-shadow-lg">
           {result.exitTime}
         </div>
