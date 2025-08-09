@@ -10,6 +10,7 @@ import Footer from './components/Footer';
 import { WorkMode, WorkTimeState } from './types';
 import { calculateExitTime, timeStringToMinutes } from './utils/timeCalculations';
 
+
 type Action =
   | { type: 'SET_MODE'; payload: WorkMode }
   | { type: 'SET_ENTRY_TIME'; payload: string }
