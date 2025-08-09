@@ -38,7 +38,6 @@ export const calculateExitTime = (
   let targetWorkMinutes = 0;
   let breakMinutes = 0;
   let resultTitle = '';
-  let warningMessage = '';
 
   // Determine target work time and break based on mode
   switch (mode) {
@@ -80,7 +79,6 @@ export const calculateExitTime = (
   // Meal Voucher Validation & Correction
   const minExitTimeMinutes = 16 * 60 + 15; // 16:15
   if (mode === '7h12' && lunchBreakEnabled && exitTotalMinutes < minExitTimeMinutes) {
-    warningMessage = `Uscita minima per buono pasto: 16:15`;
     exitTotalMinutes = minExitTimeMinutes;
   }
   
@@ -91,7 +89,6 @@ export const calculateExitTime = (
     exitTime: formatTime(exitDate),
     workedTime: minutesToHM(targetWorkMinutes),
     breakTime: minutesToHM(breakMinutes),
-    title: resultTitle,
-    warning: warningMessage || undefined
+    title: resultTitle
   };
 };
