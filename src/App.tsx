@@ -1,4 +1,5 @@
-import React, { useState, useMemo, useCallback, useEffect, useReducer } from 'react';
+
+import React, { useState, useMemo, useCallback, useEffect } from 'react';
 import { Utensils, Zap } from 'lucide-react';
 import Header from './components/Header';
 import Clock from './components/Clock';
@@ -10,59 +11,49 @@ import Footer from './components/Footer';
 import { WorkMode, WorkTimeState } from './types';
 import { calculateExitTime, timeStringToMinutes } from './utils/timeCalculations';
 
-
+const App: React.FC = () => {
+  const [state, setState] = useState<WorkTimeState>({
+    selectedMode: '6h',
+    entryTime: '',
+    lunchBreakEnabled: false,
+    overtimeEnabled: false,
+    expertMode: false,
+    lunchBreakStart: '',
+    lunchBreakDuration: 30,
+  });
 
   const [entryTimeError, setEntryTimeError] = useState('');
   const [lunchBreakError, setLunchBreakError] = useState('');
 
-  const handleModeChange = useCallback(
-    (mode: WorkMode) => {
-      dispatch({ type: 'SET_MODE', payload: mode });
-    },
-    [dispatch]
-  );
+  const handleModeChange = useCallback((mode: WorkMode) => {
+    setState(prev => ({ ...prev, selectedMode: mode }));
+  }, []);
 
-  const handleEntryTimeChange = useCallback(
-    (time: string) => {
-      dispatch({ type: 'SET_ENTRY_TIME', payload: time });
-    },
-    [dispatch]
-  );
+  const handleEntryTimeChange = useCallback((time: string) => {
+    setState(prev => ({ ...prev, entryTime: time }));
+  }, []);
 
-  const handleLunchBreakChange = useCallback(
-    (enabled: boolean) => {
-      dispatch({ type: 'TOGGLE_LUNCH_BREAK', payload: enabled });
-    },
-    [dispatch]
-  );
+  const handleLunchBreakChange = useCallback((enabled: boolean) => {
+    setState(prev => ({ ...prev, lunchBreakEnabled: enabled }));
+  }, []);
 
   const toggleExpertMode = useCallback(() => {
-    dispatch({ type: 'TOGGLE_EXPERT_MODE' });
-  }, [dispatch]);
+    setState(prev => ({ ...prev, expertMode: !prev.expertMode }));
+  }, []);
 
-  const handleLunchBreakStartChange = useCallback(
-    (time: string) => {
-      dispatch({ type: 'SET_LUNCH_START', payload: time });
-    },
-    [dispatch]
-  );
+  const handleLunchBreakStartChange = useCallback((time: string) => {
+    setState(prev => ({ ...prev, lunchBreakStart: time }));
+  }, []);
 
-  const handleLunchBreakDurationChange = useCallback(
-    (duration: number) => {
-      dispatch({ type: 'SET_LUNCH_DURATION', payload: duration });
-    },
-    [dispatch]
-  );
+  const handleLunchBreakDurationChange = useCallback((duration: number) => {
+    setState(prev => ({ ...prev, lunchBreakDuration: duration }));
+  }, []);
 
-  const handleOvertimeChange = useCallback(
-    (enabled: boolean) => {
-      dispatch({ type: 'TOGGLE_OVERTIME', payload: enabled });
-    },
-    [dispatch]
-  );
+  const handleOvertimeChange = useCallback((enabled: boolean) => {
+    setState(prev => ({ ...prev, overtimeEnabled: enabled }));
+  }, []);
 
   const handleReset = useCallback(() => {
-
     setState({
       selectedMode: '6h',
       entryTime: '',
@@ -84,7 +75,6 @@ import { calculateExitTime, timeStringToMinutes } from './utils/timeCalculations
     const isValid = /^([0-1]\d|2[0-3]):([0-5]\d)$/.test(state.entryTime);
     setEntryTimeError(isValid ? '' : 'Orario non valido');
   }, [state.entryTime]);
-
 
   useEffect(() => {
     if (
