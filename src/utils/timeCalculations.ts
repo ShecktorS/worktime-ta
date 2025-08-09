@@ -8,8 +8,11 @@ export const formatTime = (date: Date): string => {
 };
 
 export const timeStringToMinutes = (timeStr: string): number => {
-  if (!timeStr) return 0;
-  const [h, m] = timeStr.split(':').map(Number);
+  if (!timeStr) return NaN;
+  const [hStr, mStr] = timeStr.split(':');
+  const h = Number(hStr);
+  const m = Number(mStr);
+  if (Number.isNaN(h) || Number.isNaN(m)) return NaN;
   return h * 60 + m;
 };
 
@@ -65,6 +68,7 @@ export const calculateExitTime = (
 
   // Calculate exit time
   const entrataMinutes = timeStringToMinutes(entryTime);
+  if (isNaN(entrataMinutes)) return null;
   let exitTotalMinutes = entrataMinutes + targetWorkMinutes + breakMinutes;
   
   // Add overtime if toggled
