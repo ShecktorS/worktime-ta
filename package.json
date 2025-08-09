@@ -8,7 +8,8 @@
     "build": "vite build",
     "lint": "eslint .",
     "preview": "vite preview",
-    "test": "npx tsc tests/timeCalculations.test.ts src/utils/timeCalculations.ts src/types/index.ts --module ES2020 --moduleResolution node --target ES2019 --outDir build --rootDir . && node --test build/tests/timeCalculations.test.js"
+    "test": "npx tsc tests/timeCalculations.test.ts src/utils/timeCalculations.ts src/types/index.ts --module ES2020 --moduleResolution node --target ES2019 --outDir build --rootDir . && node --test build/tests/timeCalculations.test.js",
+    "prebuild": "npx update-browserslist-db@latest"
   },
   "dependencies": {
     "lucide-react": "^0.344.0",
