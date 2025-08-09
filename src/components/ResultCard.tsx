@@ -2,7 +2,7 @@ import React from 'react';
 import { CalculationResult } from '../types';
 
 interface ResultCardProps {
-  result: CalculationResult | null;
+  result: Omit<CalculationResult, 'warning'> | null;
   visible: boolean;
 }
 
