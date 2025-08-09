@@ -10,15 +10,24 @@ import Footer from './components/Footer';
 import { WorkMode, WorkTimeState } from './types';
 import { calculateExitTime, timeStringToMinutes } from './utils/timeCalculations';
 
+const defaultState: WorkTimeState = {
+  selectedMode: '6h',
+  entryTime: '',
+  lunchBreakEnabled: false,
+  overtimeEnabled: false,
+  expertMode: false,
+  lunchBreakStart: '',
+  lunchBreakDuration: 30,
+};
+
 const App: React.FC = () => {
-  const [state, setState] = useState<WorkTimeState>({
-    selectedMode: '6h',
-    entryTime: '',
-    lunchBreakEnabled: false,
-    overtimeEnabled: false,
-    expertMode: false,
-    lunchBreakStart: '',
-    lunchBreakDuration: 30,
+  const [state, setState] = useState<WorkTimeState>(() => {
+    try {
+      const stored = localStorage.getItem('workTimeState');
+      return stored ? { ...defaultState, ...JSON.parse(stored) } : { ...defaultState };
+    } catch {
+      return { ...defaultState };
+    }
   });
 
   const [lunchBreakError, setLunchBreakError] = useState('');
@@ -52,16 +61,16 @@ const App: React.FC = () => {
   }, []);
 
   const handleReset = useCallback(() => {
-    setState({
-      selectedMode: '6h',
-      entryTime: '',
-      lunchBreakEnabled: false,
-      overtimeEnabled: false,
-      expertMode: false,
-      lunchBreakStart: '',
-      lunchBreakDuration: 30,
-    });
-    }, []);
+    setState({ ...defaultState });
+  }, []);
+
+  useEffect(() => {
+    try {
+      localStorage.setItem('workTimeState', JSON.stringify(state));
+    } catch {
+      // Ignore write errors
+    }
+  }, [state]);
 
   useEffect(() => {
     if (!state.expertMode || !state.lunchBreakEnabled || !state.lunchBreakStart) {
